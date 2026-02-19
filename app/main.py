@@ -48,12 +48,12 @@ def main():
 
     for tool_call in chat.choices[0].message.tool_calls: 
         name = tool_call.function.name
-        
+
         if name == "Read": 
             arguments = tool_call.function.arguments
             parameters = json.load(arguments)
             with open(parameters) as f: 
-                print(f.read)
+                print(f.read())
         else: 
             print(chat.choices[0].message.content)
             return 
