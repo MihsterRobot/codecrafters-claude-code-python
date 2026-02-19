@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import json
 
 from openai import OpenAI
 
@@ -21,7 +22,7 @@ def main():
     chat = client.chat.completions.create(
         model="anthropic/claude-haiku-4.5",
         messages=[{"role": "user", "content": args.p}],
-        tools=[{
+        tools=[{ # Tells the model which tools are available and the arguments they accept
             "type": "function",
             "function": {
                 "name": "Read",
@@ -42,11 +43,23 @@ def main():
 
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response")
+    
+    message = chat.choices[0].message.content
 
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
+    for tool_call in chat.choices[0].message.tool_calls: 
+        name = tool_call.function.name
+        
+        if name == "Read": 
+            arguments = tool_call.function.arguments
+            parameters = json.load(arguments)
+            with open(parameters) as f: 
+                print(f.read)
+        else: 
+            print(chat.choices[0].message.content)
+            return 
+
+    # Debugging
     print("Logs from your program will appear here!", file=sys.stderr)
-
-    print(chat.choices[0].message.content)
 
 
 if __name__ == "__main__":
