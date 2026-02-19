@@ -9,6 +9,23 @@ API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
 
 
+def execute_tool(call):
+    """Execute a tool call and return its result as a structured message, or None if the tool is unsupported."""
+    args = json.loads(call.function.arguments)
+
+    if call.function.name == "Read":
+        with open(args["file_path"]) as f: 
+            content = f.read()
+        return {
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": content
+        }
+
+    # If other tools are added later, handle them here
+    return None 
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("-p", required=True)
@@ -19,9 +36,11 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    messages=[{"role": "user", "content": args.p}]
+    messages=[{"role": "user", "content": args.p}] # Initial conversation
+    finish_reason = None
+    message = None
 
-    while True:
+    while finish_reason != "stop":
         chat = client.chat.completions.create(
             model="anthropic/claude-haiku-4.5",
             messages=messages,
@@ -47,31 +66,18 @@ def main():
         if not chat.choices or len(chat.choices) == 0:
             raise RuntimeError("no choices in response")
 
-        # Store the model's message
         message = chat.choices[0].message
+        finish_reason = chat.choices[0].finish_reason
         messages.append(message)
 
-        # Check if the model requested any tools
+        # Execute any requested tools
         if message.tool_calls: 
-            # Iterate through the tool calls
             for call in message.tool_calls:
-                # Convert the JSON argument string into a Python dictionary
-                args = json.loads(call.function.arguments)
+                tool_result = execute_tool(call)
+                if tool_result:
+                    messages.append(tool_result)
 
-                # Execute the "Read" tool by opening the specified file and reading its contents into a string
-                if call.function.name == "Read": 
-                    with open(args["file_path"]) as f:
-                        content = f.read()
-
-                    # Add the tool's execution result to the conversation history
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": call.id,
-                        "content": content
-                    })
-        else: 
-            print(message.content)
-            break
+    print(message.content)
 
     # Debugging
     print("Logs from your program will appear here!", file=sys.stderr)
