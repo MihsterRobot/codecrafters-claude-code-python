@@ -61,11 +61,10 @@ def main():
                 args = json.loads(call.function.arguments)
                 if call.function.name == "Read":
                     with open(args["file_path"]) as f:
-                        messages_list.append(f)
+                        print(f.read())
         else:
             tool_requested = False
             print(message.content)
-            
 
     # Debugging
     print("Logs from your program will appear here!", file=sys.stderr)
