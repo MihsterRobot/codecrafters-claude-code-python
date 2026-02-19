@@ -45,7 +45,7 @@ def main():
         raise RuntimeError("no choices in response")
 
     i = 0
-    messages = [chat.choice.completions.messages] # Initial chat history
+    messages = [chat.choices.completions.messages] # Initial chat history
     tool_requested = True
 
     # Iterate until the model responds without requesting any tools
