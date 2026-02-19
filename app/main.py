@@ -19,41 +19,53 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    chat = client.chat.completions.create(
-        model="anthropic/claude-haiku-4.5",
-        messages=[{"role": "user", "content": args.p}],
-        tools=[{ # Tells the model which tools are available and the arguments they accept
-            "type": "function",
-            "function": {
-                "name": "Read",
-                "description": "Read and return the contents of a file",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "file_path": {
-                            "type": "string",
-                            "description": "The path to the file to be read"
-                        }
-                    },
-                    "required": ["file_path"]
+    messages_list = []
+    tool_requested = True
+    i = 0
+
+    # Iterate until the model responds without requesting any tools
+    while tool_requested: 
+        chat = client.chat.completions.create(
+            model="anthropic/claude-haiku-4.5",
+            messages=[{"role": "user", "content": args.p}],
+            tools=[{ 
+                "type": "function",
+                "function": {
+                    "name": "Read",
+                    "description": "Read and return the contents of a file",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "file_path": {
+                                "type": "string",
+                                "description": "The path to the file to be read"
+                            }
+                        },
+                        "required": ["file_path"]
+                    }
                 }
-            }
-        }]
-    )
+            }]
+        )
 
-    if not chat.choices or len(chat.choices) == 0:
-        raise RuntimeError("no choices in response")
+        if not chat.choices or len(chat.choices) == 0:
+            raise RuntimeError("no choices in response")
     
-    message = chat.choices[0].message
+        # Get and store the message
+        message = chat.choices[i].message 
+        messages_list.append(message) 
+        i += 1
 
-    if message.tool_calls:
-        for call in message.tool_calls: 
-            args = json.loads(call.function.arguments)
-            if call.function.name == "Read":
-                with open(args["file_path"]) as f:
-                    print(f.read())
-    else:
-        print(message.content)
+        # Check if the model requested to use any tools
+        if message.tool_calls:
+            for call in message.tool_calls: 
+                args = json.loads(call.function.arguments)
+                if call.function.name == "Read":
+                    with open(args["file_path"]) as f:
+                        messages_list.append(f)
+        else:
+            tool_requested = False
+            print(message.content)
+            
 
     # Debugging
     print("Logs from your program will appear here!", file=sys.stderr)
