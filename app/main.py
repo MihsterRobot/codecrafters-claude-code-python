@@ -19,47 +19,59 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    chat = client.chat.completions.create(
-        model="anthropic/claude-haiku-4.5",
-        messages=[{"role": "user", "content": args.p}],
-        tools=[{ 
-            "type": "function",
-            "function": {
-                "name": "Read",
-                "description": "Read and return the contents of a file",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "file_path": {
-                            "type": "string",
-                            "description": "The path to the file to be read"
-                        }
-                    },
-                    "required": ["file_path"]
+    messages=[{"role": "user", "content": args.p}]
+
+    while True:
+        chat = client.chat.completions.create(
+            model="anthropic/claude-haiku-4.5",
+            messages=messages,
+            tools=[{ 
+                "type": "function",
+                "function": {
+                    "name": "Read",
+                    "description": "Read and return the contents of a file",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "file_path": {
+                                "type": "string",
+                                "description": "The path to the file to be read"
+                            }
+                        },
+                        "required": ["file_path"]
+                    }
                 }
-            }
-        }]
-    )
+            }]
+        )
 
-    if not chat.choices or len(chat.choices) == 0:
-        raise RuntimeError("no choices in response")
+        if not chat.choices or len(chat.choices) == 0:
+            raise RuntimeError("no choices in response")
 
-    i = 0
-    messages = [chat.choices.completions.messages] # Initial chat history
-    tool_requested = True
+        # Store the model's message
+        message = chat.choices[0].message
+        messages.append(message)
 
-    # Iterate until the model responds without requesting any tools
-    while tool_requested:
-        # Check if the model requested to use any tools
-        if messages.message.tool_calls:
-            for call in messages.message.tool_calls: 
+        # Check if the model requested any tools
+        if message.tool_calls: 
+            # Iterate through the tool calls
+            for call in message.tool_calls:
+                # Convert the JSON argument string into a Python dictionary
                 args = json.loads(call.function.arguments)
-                if call.function.name == "Read": # Execute the tool
+
+                # Execute the "Read" tool by opening the specified file and reading its contents into a string
+                if call.function.name == "Read": 
                     with open(args["file_path"]) as f:
-                        messages.append(f)
-        else:
-            tool_requested = False
-            print(messages.message.content)
+                        content = f.read()
+
+                    # Add the tool's execution result to the conversation history
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": call.id,
+                        "content": content
+                    })
+        else: 
+            print(message.content)
+            break
 
     # Debugging
     print("Logs from your program will appear here!", file=sys.stderr)
