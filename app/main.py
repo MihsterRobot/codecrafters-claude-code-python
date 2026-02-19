@@ -44,19 +44,16 @@ def main():
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response")
     
-    message = chat.choices[0].message.content
+    message = chat.choices[0].message
 
-    for tool_call in chat.choices[0].message.tool_calls: 
-        name = tool_call.function.name
-
-        if name == "Read": 
-            arguments = tool_call.function.arguments
-            parameters = json.load(arguments)
-            with open(parameters) as f: 
-                print(f.read())
-        else: 
-            print(chat.choices[0].message.content)
-            return 
+    if message.tool_calls:
+        for call in message.tool_calls: 
+            args = json.loads(call.function.arguments)
+            if call.function.name == "Read":
+                with open(args["file_path"]) as f:
+                    print(f.read())
+    else:
+        print(message.content)
 
     # Debugging
     print("Logs from your program will appear here!", file=sys.stderr)
