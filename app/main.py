@@ -3,6 +3,7 @@ import os
 import sys
 import json
 
+from os import subprocess 
 from openai import OpenAI
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -29,6 +30,14 @@ def execute_tool(call):
             "role": "tool",
             "tool_call_id": call.id,
             "content": "write successful"
+        }
+    
+    if call.function.name == "Bash":
+        cmd = subprocess.run(args["command"], capture_output=True)
+        return {
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": cmd
         }
 
     return None 
@@ -86,6 +95,23 @@ def main():
                                 "content": {
                                     "type": "string",
                                     "description": "The content to write to the file"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "Bash",
+                        "description": "Execute a shell command",
+                        "parameters": {
+                            "type": "object",
+                            "required": ["command"],
+                            "properties": {
+                                "command": {
+                                    "type": "string",
+                                    "description": "The command to execute"
                                 }
                             }
                         }
