@@ -29,7 +29,7 @@ def execute_tool(call):
         return {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": "write successful"
+            "content": "Write successful"
         }
     
     if call.function.name == "Bash":
@@ -38,10 +38,16 @@ def execute_tool(call):
             capture_output=True,
             text=True
         )
+        if result.returncode != 0: 
+            return {
+                "role": "tool",
+                "tool_call_id": call.id,
+                "content": "Error deleting file"
+            }
         return {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": [result.stdout, result.stderr, result.returncode]
+            "content": "File deleted"
         }
 
     return None 
