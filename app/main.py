@@ -24,11 +24,11 @@ def execute_tool(call):
 
     if call.function.name == "Write":
         with open(args["file_path"], "w") as f: 
-            content = f.write(args["content"])
+            f.write(args["content"])
         return {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": content
+            "content": "write successful"
         }
 
     return None 
