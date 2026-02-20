@@ -24,8 +24,12 @@ def execute_tool(call):
 
     if call.function.name == "Write":
         with open(args["file_path"], "w") as f: 
-            file = f.write(call.function.content)
-            return file
+            content = f.write(args["content"])
+        return {
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": content
+        }
 
     return None 
 
@@ -100,9 +104,9 @@ def main():
         # Execute any requested tools
         if message.tool_calls: 
             for call in message.tool_calls:
-                tool_result = execute_tool(call)
-                if tool_result:
-                    messages.append(tool_result)
+                tool_message = execute_tool(call)
+                if tool_message:
+                    messages.append(tool_message)
 
     print(message.content)
 
