@@ -41,7 +41,7 @@ def execute_tool(call):
         return {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": result
+            "content": [result.stdout, result.stderr, result.returncode]
         }
 
     return None 
