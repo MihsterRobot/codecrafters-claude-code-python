@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import json
+import subprocess
 
 from openai import OpenAI
 
@@ -32,7 +33,7 @@ def execute_tool(call):
         }
     
     if call.function.name == "Bash":
-        cmd = os.subprocess.run(args["command"], capture_output=True)
+        cmd = subprocess.run(args["command"], capture_output=True)
         return {
             "role": "tool",
             "tool_call_id": call.id,
