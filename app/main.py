@@ -33,11 +33,15 @@ def execute_tool(call):
         }
     
     if call.function.name == "Bash":
-        cmd = subprocess.run(args["command"], capture_output=True)
+        result = subprocess.run(
+            ["bash", "-c", args["command"]],
+            capture_output=True,
+            text=True
+        )
         return {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": cmd
+            "content": result
         }
 
     return None 
