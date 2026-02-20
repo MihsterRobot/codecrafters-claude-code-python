@@ -42,12 +42,12 @@ def execute_tool(call):
             return {
                 "role": "tool",
                 "tool_call_id": call.id,
-                "content": "Error deleting file"
+                "content": result.stderr
             }
         return {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": "File deleted"
+            "content": result.stdout
         }
 
     return None 
