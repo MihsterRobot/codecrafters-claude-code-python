@@ -76,7 +76,6 @@ def execute_tool(call):
     args = json.loads(call.function.arguments)
     name = call.function.name
 
-    if args[]
     if name == "Read":
         with open(args["file_path"]) as f: 
             content = f.read()
