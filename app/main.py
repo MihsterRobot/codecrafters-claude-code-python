@@ -10,62 +10,8 @@ API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
 
 
-def execute_tool(call):
-    """Execute a tool call and return its result as a structured message, or None if the tool is unsupported."""
-    args = json.loads(call.function.arguments)
-
-    if call.function.name == "Read":
-        with open(args["file_path"]) as f: 
-            content = f.read()
-        return {
-            "role": "tool",
-            "tool_call_id": call.id,
-            "content": content
-        }
-
-    if call.function.name == "Write":
-        with open(args["file_path"], "w") as f: 
-            f.write(args["content"])
-        return {
-            "role": "tool",
-            "tool_call_id": call.id,
-            "content": "Write successful"
-        }
-    
-    if call.function.name == "Bash":
-        result = subprocess.run(
-            ["bash", "-c", args["command"]],
-            capture_output=True,
-            text=True
-        )
-        return {
-            "role": "tool",
-            "tool_call_id": call.id,
-            "content": result.stderr if result.returncode != 0 else result.stdout
-        }
-
-    return None 
-
-
-def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("-p", required=True)
-    args = p.parse_args()
-
-    if not API_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY is not set")
-
-    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-
-    messages=[{"role": "user", "content": args.p}] # Initial conversation
-    finish_reason = None
-    message = None
-
-    while finish_reason != "stop":
-        chat = client.chat.completions.create(
-            model="anthropic/claude-haiku-4.5",
-            messages=messages,
-            tools=[
+def tool_specs(): 
+    return [
                 {
                     "type": "function",
                     "function": {
@@ -73,13 +19,14 @@ def main():
                         "description": "Read and return the contents of a file",
                         "parameters": {
                             "type": "object",
+                            "required": ["file_path"],
                             "properties": {
                                 "file_path": {
                                     "type": "string",
                                     "description": "The path to the file to be read"
                                 }
                             },
-                            "required": ["file_path"]
+                            # "required": ["file_path"]
                         }
                     }
                 },
@@ -122,10 +69,70 @@ def main():
                     }
                 }
             ]
+
+
+def execute_tool(call):
+    """Execute a tool call and return its result as a structured message, or None if the tool is unsupported."""
+    args = json.loads(call.function.arguments)
+    name = call.function.name
+
+    if args[]
+    if name == "Read":
+        with open(args["file_path"]) as f: 
+            content = f.read()
+        return {
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": content
+        }
+
+    if name == "Write":
+        with open(args["file_path"], "w") as f: 
+            f.write(args["content"])
+        return {
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": "Write successful"
+        }
+    
+    if name == "Bash":
+        result = subprocess.run(
+            ["bash", "-c", args["command"]],
+            capture_output=True,
+            text=True
+        )
+        return {
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": result.stderr if result.returncode != 0 else result.stdout
+        }
+
+    return None 
+
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("-p", required=True)
+    args = p.parse_args()
+
+    if not API_KEY:
+        raise RuntimeError("OPENROUTER_API_KEY is not set")
+
+    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+
+    messages=[{"role": "user", "content": args.p}] # Initial conversation
+    finish_reason = None
+    message = None
+
+    while finish_reason != "stop":
+        chat = client.chat.completions.create(
+            model="anthropic/claude-haiku-4.5",
+            messages=messages,
+            tools=tool_specs()
         )
 
         if not chat.choices or len(chat.choices) == 0:
-            raise RuntimeError("no choices in response")
+            raise RuntimeError("No choices in response")
 
         message = chat.choices[0].message
         finish_reason = chat.choices[0].finish_reason
