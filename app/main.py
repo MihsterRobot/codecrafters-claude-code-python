@@ -38,16 +38,10 @@ def execute_tool(call):
             capture_output=True,
             text=True
         )
-        if result.returncode != 0: 
-            return {
-                "role": "tool",
-                "tool_call_id": call.id,
-                "content": result.stderr
-            }
         return {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": result.stdout
+            "content": result.stderr if result.returncode != 0 else result.stdout
         }
 
     return None 
