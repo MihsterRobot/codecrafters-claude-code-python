@@ -25,8 +25,7 @@ def tool_specs():
                                     "type": "string",
                                     "description": "The path to the file to be read"
                                 }
-                            },
-                            # "required": ["file_path"]
+                            }
                         }
                     }
                 },
