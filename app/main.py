@@ -5,7 +5,7 @@ import json
 
 from openai import OpenAI
 
-import tools as t
+from . import tools as t
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
@@ -21,7 +21,7 @@ def execute_tool(call):
         return None
 
     result = handler(args)
-    
+
     return {
         "role": "tool",
         "tool_call_id": call.id,
