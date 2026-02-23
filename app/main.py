@@ -12,7 +12,14 @@ BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v
 
 
 def execute_tool(call):
-    """Execute a tool call and return its result as a structured message, or None if the tool is unsupported."""
+    """
+    Executes a tool call using the registry and returns a structured tool
+    message. If the tool name isn't registered, returns None.
+
+    Earlier versions used branching (if name == "Read": ...), but the
+    registry-based dispatcher makes the system scalable and avoids
+    repeating logic for each tool.
+    """
     args = json.loads(call.function.arguments)
     name = call.function.name
     
@@ -39,7 +46,7 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    messages=[{"role": "user", "content": args.p}] # Initial conversation
+    messages=[{"role": "user", "content": args.p}] 
     finish_reason = None
     message = None
 

@@ -1,6 +1,9 @@
 import subprocess
 
-
+# Each tool is implemented as a simple function.
+# Earlier versions used a Tool class, but that added unnecessary structure:
+# every tool had only one operation and no shared state.
+# Functions keep the design lightweight and easy to extend.
 def read(args):
     with open(args["file_path"]) as f: 
         content = f.read()
@@ -14,6 +17,8 @@ def write(args):
         
 
 def bash(args):
+    # We return only stdout/stderr instead of the full CompletedProcess object.
+    # This keeps the tool interface clean and predictable for the model.
     result = subprocess.run(
         ["bash", "-c", args["command"]],
         capture_output=True,
@@ -22,6 +27,9 @@ def bash(args):
     return result.stderr if result.returncode != 0 else result.stdout
 
 
+# The tool specs define how the LLM sees and calls each tool.
+# They are kept separate from the handlers so the logic (Python functions)
+# and the interface (JSON schema) stay decoupled.
 def get_tool_specs():
     return [
                 {
@@ -82,7 +90,9 @@ def get_tool_specs():
             ]
 
 
-# Tool registry
+# A registry mapping tool names to handler functions.
+# This replaces the earlier if/elif chain in execute_tool(),
+# making the system extensible: adding a new tool is now one line here.
 TOOL_HANDLERS = {
     "Read": read,
     "Write": write,
