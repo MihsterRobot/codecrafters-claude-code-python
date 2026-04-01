@@ -12,8 +12,7 @@ BASE_URL = os.getenv('OPENROUTER_BASE_URL', default='https://openrouter.ai/api/v
 
 
 def execute_tool(call):
-    '''
-    Executes a tool call using the registry and returns a structured tool
+    '''Executes a tool call using the registry and returns a structured tool
     message. If the tool name isn't registered, returns None.
 
     Earlier versions used branching (if name == 'Read': ...), but the
@@ -36,9 +35,9 @@ def execute_tool(call):
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument('-p', required=True)
-    args = p.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', required=True)
+    args = parser.parse_args()
 
     if not API_KEY:
         raise RuntimeError('OPENROUTER_API_KEY is not set')
@@ -63,7 +62,7 @@ def main():
         finish_reason = chat.choices[0].finish_reason
         messages.append(message)
 
-        # Execute any requested tools
+        # Execute any requested tools.
         if message.tool_calls: 
             for call in message.tool_calls:
                 tool_message = execute_tool(call)
