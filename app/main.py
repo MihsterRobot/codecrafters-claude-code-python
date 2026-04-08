@@ -69,6 +69,7 @@ def main():
                 if tool_message:
                     messages.append(tool_message)
 
+    assert message is not None, 'message should always be set after the loop'
     print(message.content)
 
     # Debugging
