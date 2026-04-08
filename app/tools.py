@@ -11,7 +11,7 @@ def read(args: dict[str, str]) -> str:
     with open(args['file_path']) as f: 
         content = f.read()
     return content
-        
+
 
 def write(args: dict[str, str]) -> str:
     with open(args['file_path'], 'w') as f: 
