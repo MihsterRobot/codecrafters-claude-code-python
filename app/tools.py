@@ -1,22 +1,25 @@
 import subprocess
 
+from openai.types.chat import ChatCompletionToolParam
+
+
 # Each tool is implemented as a simple function.
 # Earlier versions used a Tool class, but that added unnecessary structure:
 # every tool had only one operation and no shared state.
 # Functions keep the design lightweight and easy to extend.
-def read(args):
+def read(args: dict[str, str]) -> str:
     with open(args['file_path']) as f: 
         content = f.read()
     return content
         
 
-def write(args):
+def write(args: dict[str, str]) -> str:
     with open(args['file_path'], 'w') as f: 
         f.write(args['content'])
     return 'Write successful'
         
 
-def bash(args):
+def bash(args: dict[str, str]) -> str:
     # We return only stdout/stderr instead of the full CompletedProcess object.
     # This keeps the tool interface clean and predictable for the model.
     result = subprocess.run(
@@ -30,7 +33,7 @@ def bash(args):
 # The tool specs define how the LLM sees and calls each tool.
 # They are kept separate from the handlers so the logic (Python functions)
 # and the interface (JSON schema) stay decoupled.
-def get_tool_specs():
+def get_tool_specs() -> list[ChatCompletionToolParam]:
     return [
                 {
                     'type': 'function',
