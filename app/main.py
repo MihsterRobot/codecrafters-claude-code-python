@@ -1,3 +1,5 @@
+'''Entry point for the Claude Code agent, handling tool dispatch and the agentic loop.'''
+
 import os
 import sys
 import json
@@ -13,12 +15,14 @@ BASE_URL = os.getenv('OPENROUTER_BASE_URL', default='https://openrouter.ai/api/v
 
 
 def execute_tool(call: ChatCompletionMessageToolCall) -> dict[str, str] | None:
-    '''Executes a tool call using the registry and returns a structured tool
-    message. If the tool name isn't registered, returns None.
+    '''Execute a tool call using the registry and return a structured tool message.
+    
+    Args:
+        call: The tool call object containing the function name and arguments.
 
-    Earlier versions used branching (if name == 'Read': ...), but the
-    registry-based dispatcher makes the system scalable and avoids
-    repeating logic for each tool.
+    Returns:
+        A dict with role, tool_call_id, and content fields, or None if the
+        tool name isn't registered.
     '''
     args = json.loads(call.function.arguments)
     name = call.function.name
@@ -37,6 +41,7 @@ def execute_tool(call: ChatCompletionMessageToolCall) -> dict[str, str] | None:
 
 
 def main() -> None:
+    '''Parse the prompt, run the agentic loop, and print the final response.'''
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', required=True)
     args = parser.parse_args()

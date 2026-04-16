@@ -1,3 +1,5 @@
+'''Tool implementations and specs for the Read, Write, and Bash tools.'''
+
 import subprocess
 
 from openai.types.chat import ChatCompletionToolParam
@@ -7,19 +9,44 @@ from openai.types.chat import ChatCompletionToolParam
 # Earlier versions used a Tool class, but that added unnecessary structure:
 # every tool had only one operation and no shared state.
 # Functions keep the design lightweight and easy to extend.
+
 def read(args: dict[str, str]) -> str:
+    '''Read and return the contents of a file.
+
+    Args:
+        args: A dict containing file_path, the path to the file to read.
+
+    Returns:
+        The full contents of the file as a string.
+    '''
     with open(args['file_path']) as f: 
         content = f.read()
     return content
 
 
 def write(args: dict[str, str]) -> str:
+    '''Write content to a file.
+
+    Args:
+        args: A dict containing file_path and content to write.
+
+    Returns:
+        A confirmation string on success.
+    '''
     with open(args['file_path'], 'w') as f: 
         f.write(args['content'])
     return 'Write successful'
         
 
 def bash(args: dict[str, str]) -> str:
+    '''Execute a shell command and return its output.
+
+    Args:
+        args: A dict containing command, the shell command to run.
+
+    Returns:
+        stdout on success, or stderr if the command exits with a non-zero code.
+    '''
     # We return only stdout/stderr instead of the full CompletedProcess object.
     # This keeps the tool interface clean and predictable for the model.
     result = subprocess.run(
@@ -34,6 +61,12 @@ def bash(args: dict[str, str]) -> str:
 # They are kept separate from the handlers so the logic (Python functions)
 # and the interface (JSON schema) stay decoupled.
 def get_tool_specs() -> list[ChatCompletionToolParam]:
+    '''Build and return the tool spec list for the Read, Write, and Bash tools.
+
+    Returns:
+        A list of ChatCompletionToolParam dicts describing each tool's
+        name, description, and parameter schema.
+    '''
     return [
                 {
                     'type': 'function',
