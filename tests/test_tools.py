@@ -7,18 +7,33 @@ from app import tools as t
 
 def test_read_returns_file_contents():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-        f.write('hello')
+        f.write('grok')
         temp_path = f.name
     content = t.read({'file_path': temp_path})
-    assert content == 'hello'
+    assert content == 'grok'
 
 
 def test_read_raises_file_not_found():
     with pytest.raises(FileNotFoundError):
-        t.read({'file_path': 'nonexistent_path'})
+        t.read({'file_path': 'nonexistent_dir/nonexistent_path'})
 
 
+def test_write_returns_success_message():
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        temp_path = f.name
+    result = t.write({'file_path': temp_path, 'content': 'krypto'})
+    assert result == 'Write successful'
 
 
+def test_write_contains_correct_file_content():
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        temp_path = f.name
+
+    t.write({'file_path': temp_path, 'content': 'foobar'})
+    content = t.read({'file_path': temp_path})
+    assert content == 'foobar'
 
 
+def test_write_raises_file_not_found():
+    with pytest.raises(FileNotFoundError):
+        t.write({'file_path': 'nonexistent_dir/nonexistent_path', 'content': 'marsh'})
