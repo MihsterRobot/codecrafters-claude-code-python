@@ -50,7 +50,6 @@ def main() -> None:
         raise RuntimeError('OPENROUTER_API_KEY is not set')
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-
     messages=[{'role': 'user', 'content': args.p}] 
     finish_reason = None
     message = None
