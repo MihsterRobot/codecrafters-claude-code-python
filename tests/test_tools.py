@@ -37,3 +37,15 @@ def test_write_contains_correct_file_content():
 def test_write_raises_file_not_found():
     with pytest.raises(FileNotFoundError):
         t.write({'file_path': 'nonexistent_dir/nonexistent_path', 'content': 'marsh'})
+
+
+def test_bash_returns_stdout():
+    result = t.bash({'command': 'echo hello'})
+    assert result == 'hello\n'
+
+
+def test_bash_returns_stderr():
+    result = t.bash({'command': 'nonexistent_cmd BIOS'})
+    assert result != ''
+
+    
