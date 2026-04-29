@@ -5,3 +5,13 @@ requires-python = ">=3.14"
 dependencies = [
     "openai>=2.15.0",
 ]
+
+[project.optional-dependencies]
+# Dev dependencies are kept separate so they aren't installed in production.
+dev = [
+    'pytest',
+]
+
+[tool.pytest.ini_options]
+# Adds the project root to sys.path so pytest can resolve the app package.
+pythonpath = ["."]
