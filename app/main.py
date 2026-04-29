@@ -57,7 +57,7 @@ def main() -> None:
     while finish_reason != 'stop':
         chat = client.chat.completions.create(
             model='anthropic/claude-haiku-4.5',
-            messages=messages,
+            messages=messages,  # type: ignore
             tools=t.get_tool_specs()
         )
 
@@ -66,12 +66,12 @@ def main() -> None:
 
         message = chat.choices[0].message
         finish_reason = chat.choices[0].finish_reason
-        messages.append(message)
+        messages.append(message)  # type: ignore
 
         # Execute any requested tools.
         if message.tool_calls: 
             for call in message.tool_calls:
-                tool_message = execute_tool(call)
+                tool_message = execute_tool(call)  # type: ignore
                 if tool_message:
                     messages.append(tool_message)
 
