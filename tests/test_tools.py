@@ -1,8 +1,11 @@
+import json
 import tempfile
+from unittest.mock import MagicMock
 
 import pytest
 
 from app import tools as t
+from app import main as m
 
 
 def test_read_returns_file_contents():
@@ -55,3 +58,31 @@ def test_get_tool_specs_returns_valid_structure():
     for spec in result:
         assert 'type' in spec
         assert 'function' in spec
+
+
+def test_execute_tool_returns_valid_structure():
+    call = MagicMock()
+    call.id = 'test_id'
+    call.function.name = 'Read'
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        temp_path = f.name
+
+    # json.dumps serializes the dict to a valid JSON string, as execute_tool calls json.loads on arguments.
+    call.function.arguments = json.dumps({"file_path": temp_path})
+
+    result = m.execute_tool(call)
+    assert result is not None
+    assert 'role' in result
+    assert 'tool_call_id' in result
+    assert 'content' in result
+    
+
+def test_execute_tool_returns_none_for_unregistered_tool():
+    call = MagicMock()
+    call.id = 'test_id'
+    call.function.name = 'Ping'
+    call.function.arguments = '{"file_path": "some_path"}'  # JSON requires double quotes for both keys and string values.
+
+    result = m.execute_tool(call)
+    assert result is None
