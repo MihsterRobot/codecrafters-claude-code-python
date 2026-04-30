@@ -48,4 +48,10 @@ def test_bash_returns_stderr():
     result = t.bash({'command': 'nonexistent_cmd BIOS'})
     assert result != ''
 
-    
+
+def test_get_tool_specs_returns_valid_structure():
+    result = t.get_tool_specs()
+    assert len(result) == 3
+    for spec in result:
+        assert 'type' in spec
+        assert 'function' in spec
