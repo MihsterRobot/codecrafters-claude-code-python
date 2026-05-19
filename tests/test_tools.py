@@ -1,3 +1,5 @@
+'''Unit tests for tool handlers and execute_tool dispatch.'''
+
 import json
 import tempfile
 from unittest.mock import MagicMock
